@@ -3,7 +3,7 @@ import { join } from 'path';
 import { createWriteStream } from 'fs';
 import Track from '../types/track';
 import ytdl from '@distube/ytdl-core';
-import { progress } from '../util/progress';
+import { progress, showTitle, clearLine } from '../util/progress';
 
 interface DownloadResult {
     success: boolean;
@@ -33,7 +33,7 @@ async function downloadAudioFromYouTube(videoId: string, outputPath: string): Pr
     return new Promise((resolve, reject) => {
         try {
             const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-            console.log(`🎵 Downloading audio from: ${videoUrl}`);
+            console.log(`Downloading audio from: ${videoUrl}`);
             
             const stream = ytdl(videoUrl, {
                 filter: 'audioonly',
@@ -53,7 +53,7 @@ async function downloadAudioFromYouTube(videoId: string, outputPath: string): Pr
             });
             
             writeStream.on('finish', () => {
-                console.log(`✅ Audio downloaded successfully`);
+                console.log(`Audio downloaded successfully`);
                 resolve(true);
             });
             
@@ -66,51 +66,74 @@ async function downloadAudioFromYouTube(videoId: string, outputPath: string): Pr
     });
 }
 
-async function downloadMp3(track: Track, outputDir: string): Promise<DownloadResult> {
+async function downloadMp3(track: Track, outputDir: string, verbose = false): Promise<DownloadResult> {
     try {
         const safeTitle = track.title.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_');
         const safeArtist = track.artist.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_');
         const filename = `${safeArtist}_-_${safeTitle}.mp3`;
         const filepath = join(outputDir, filename);
         
-        console.log(`🔍 Searching: ${track.artist} - ${track.title}`);
+        if (verbose) {
+            console.log(`Searching: ${track.artist} - ${track.title}`);
+        }
         
         const searchQuery = `${track.artist} ${track.title}`;
         const videoId = await searchYouTube(searchQuery);
         
         if (!videoId) {
-            console.log(`❌ No YouTube video found for: ${track.title}`);
+            if (verbose) {
+                console.log(`No YouTube video found for: ${track.title}`);
+            }
             return { success: false, error: 'No YouTube video found' };
         }
         
-        console.log(`📺 Found video ID: ${videoId}`);
+        if (verbose) {
+            console.log(`Found video ID: ${videoId}`);
+        }
         
         const success = await downloadAudioFromYouTube(videoId, filepath);
         
         if (success) {
-            console.log(`✅ Downloaded: ${filename}`);
+            if (verbose) {
+                console.log(`Downloaded: ${filename}`);
+            }
             return { success: true, filename };
         } else {
-            console.log(`⚠️  Created placeholder for: ${filename}`);
-            return { success: false, error: 'API conversion failed, placeholder created' };
+            if (verbose) {
+                console.log(`Download failed for: ${filename}`);
+            }
+            return { success: false, error: 'Download failed' };
         }
         
     } catch (error) {
-        console.error(`❌ Failed to download ${track.title}:`, error);
+        console.error(`Failed to download ${track.title}:`, error);
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
 
-async function downloadTracks(tracks: Track[], outputDir: string): Promise<{ successful: number; failed: number }> {
+async function downloadTracks(tracks: Track[], outputDir: string, verbose = false): Promise<{ successful: number; failed: number }> {
     await fs.mkdir(outputDir, { recursive: true });
     
     let successful = 0;
     let failed = 0;
     
-    progress(0, 50);
+    if (!verbose) {
+        showTitle('Downloading music from YouTube');
+    } else {
+        console.log(`\nStarting download of ${tracks.length} tracks to: ${outputDir}`);
+        console.log('Downloading real audio from YouTube (this may take a while)...');
+        console.log('=' .repeat(50));
+    }
     
-    for (const track of tracks) {
-        const result = await downloadMp3(track, outputDir);
+    for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        const progressPercent = (i / tracks.length) * 100;
+        
+        if (!verbose) {
+            progress(progressPercent, 40, `Downloading (${i + 1}/${tracks.length})`);
+        }
+        
+        const result = await downloadMp3(track, outputDir, verbose);
         if (result.success) {
             successful++;
         } else {
@@ -120,8 +143,13 @@ async function downloadTracks(tracks: Track[], outputDir: string): Promise<{ suc
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    console.log('=' .repeat(50));
-    console.log(`Download complete! ✅ ${successful} successful, ⚠️  ${failed} placeholders`);
+    if (!verbose) {
+        progress(100, 40, `Complete (${tracks.length}/${tracks.length})`);
+        console.log(`\nDownloaded: ${successful} tracks | Failed: ${failed} tracks`);
+    } else {
+        console.log('=' .repeat(50));
+        console.log(`Download complete! ${successful} successful, ${failed} failed`);
+    }
     
     return { successful, failed };
 }
