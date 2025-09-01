@@ -1,0 +1,25 @@
+{
+    "name": "fetchify",
+    "version": "1.0.0",
+    "description": "Fetch spotify playlists without the use of the official API",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "build": "tsc",
+        "dev": "ts-node index.ts"
+    },
+    "author": "?",
+    "license": "ISC",
+    "dependencies": {
+        "commander": "^11.0.0",
+        "ws": "^8.14.0",
+        "jsdom": "^23.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "@types/ws": "^8.5.0",
+        "@types/jsdom": "^21.1.0",
+        "typescript": "^5.0.0",
+        "ts-node": "^10.0.0"
+    }
+}
