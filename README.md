@@ -6,7 +6,6 @@ API-free Spotify playlist downloader.
 
 ```bash
 npm install
-npm install @distube/ytdl-core
 ```
 
 ## Usage
