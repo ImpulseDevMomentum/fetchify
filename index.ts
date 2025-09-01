@@ -33,7 +33,6 @@ program
                 console.log(`URL: ${url}`);
             }
 
-            // Validate URL
             if (!url.includes('open.spotify.com/playlist/')) {
                 console.error('Error: Please provide a valid Spotify playlist URL');
                 process.exit(1);
@@ -46,8 +45,7 @@ program
             
             if (options.verbose) {
                 console.log(`Successfully fetched ${tracks.length} tracks`);
-                
-                // Count tracks with images
+
                 const tracksWithImages = tracks.filter(track => track.image_url).length;
                 if (tracksWithImages > 0) {
                     console.log(`Tracks with images: ${tracksWithImages}`);
@@ -65,12 +63,10 @@ program
             };
 
             if (options.output) {
-                // Save to file
                 const fs = await import('fs/promises');
                 await fs.writeFile(options.output, JSON.stringify(output, null, 2));
                 console.log(`Playlist data saved to: ${options.output}`);
             } else {
-                // Print to console
                 console.log('\n=== TRACKS DATA ===');
                 console.log(JSON.stringify(output, null, 2));
             }
@@ -101,10 +97,8 @@ program
         console.log('  fetchify playlist https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M');
     });
 
-// Parse command line arguments
 program.parse(process.argv);
 
-// Show help if no command provided
 if (!process.argv.slice(2).length) {
     program.outputHelp();
 }
