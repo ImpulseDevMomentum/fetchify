@@ -25,7 +25,8 @@ program
     .argument('<url>', 'Spotify playlist URL')
     .option('-o, --output <file>', 'Output file (JSON format)')
     .option('-v, --verbose', 'Enable verbose logging')
-    .action(async (url: string, options: { output?: string; verbose?: boolean }) => {
+    .option('-a, --amount <number>', 'Amount of tracks to fetch (default: auto)', 'auto')
+    .action(async (url: string, options: { output?: string; verbose?: boolean; amount?: string }) => {
         try {
             if (options.verbose) {
                 console.log(ansci_logo);
@@ -41,8 +42,17 @@ program
             console.log('Initializing browser...');
             console.log('Note: A browser window will open. Please ensure you are logged into Spotify.');
             
-            const tracks = await fetchPlaylist(url);
+            let amountToFetch: number | undefined;
+            if (options.amount && options.amount !== 'auto') {
+                amountToFetch = parseInt(options.amount);
+                if (isNaN(amountToFetch) || amountToFetch <= 0) {
+                    console.error('Error: Amount must be a positive number or "auto"');
+                    process.exit(1);
+                }
+            }
             
+            const tracks = await fetchPlaylist(url, amountToFetch);
+                        
             if (options.verbose) {
                 console.log(`Successfully fetched ${tracks.length} tracks`);
 
