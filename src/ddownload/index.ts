@@ -33,7 +33,7 @@ async function downloadAudioFromYouTube(videoId: string, outputPath: string): Pr
     return new Promise((resolve, reject) => {
         try {
             const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-            console.log(`Downloading audio from: ${videoUrl}`);
+            console.log(` Downloading audio from: ${videoUrl}`);
             
             const stream = ytdl(videoUrl, {
                 filter: 'audioonly',
