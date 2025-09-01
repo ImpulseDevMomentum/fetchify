@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import { fetchPlaylist } from './src/fetchers/playlist';
+import { downloadTracks } from './src/ddownload';
 
 const program = new Command();
 
@@ -23,10 +24,11 @@ program
     .command('playlist')
     .description('Fetch a Spotify playlist')
     .argument('<url>', 'Spotify playlist URL')
-    .option('-o, --output <file>', 'Output file (JSON format)')
+    .option('-o, --output <path>', 'Output directory/file (JSON format)')
     .option('-v, --verbose', 'Enable verbose logging')
     .option('-a, --amount <number>', 'Amount of tracks to fetch (default: auto)', 'auto')
-    .action(async (url: string, options: { output?: string; verbose?: boolean; amount?: string }) => {
+    .option('-d, --download', 'Download MP3 files instead of saving JSON')
+    .action(async (url: string, options: { output?: string; verbose?: boolean; amount?: string; download?: boolean }) => {
         try {
             if (options.verbose) {
                 console.log(ansci_logo);
@@ -63,22 +65,40 @@ program
                 }
             }
 
-            const output = {
-                tracks,
-                fetchedAt: new Date().toISOString(),
-                stats: {
-                    trackCount: tracks.length,
-                    totalDuration: tracks.reduce((sum, track) => sum + track.duration, 0)
+            if (options.download) {
+                if (!options.output) {
+                    console.error('Error: Download mode requires --output directory to be specified');
+                    process.exit(1);
                 }
-            };
-
-            if (options.output) {
-                const fs = await import('fs/promises');
-                await fs.writeFile(options.output, JSON.stringify(output, null, 2));
-                console.log(`Playlist data saved to: ${options.output}`);
+                
+                console.log(`\nDownload mode enabled. Fetching MP3 files...`);
+                const downloadResult = await downloadTracks(tracks, options.output);
+                
+                if (options.verbose) {
+                    console.log(`\nDownload Summary:`);
+                    console.log(`✓ Successfully downloaded: ${downloadResult.successful} tracks`);
+                    console.log(`✗ Failed downloads: ${downloadResult.failed} tracks`);
+                    console.log(`📁 Output directory: ${options.output}`);
+                }
             } else {
-                console.log('\n=== TRACKS DATA ===');
-                console.log(JSON.stringify(output, null, 2));
+                // JSON mode (default)
+                const output = {
+                    tracks,
+                    fetchedAt: new Date().toISOString(),
+                    stats: {
+                        trackCount: tracks.length,
+                        totalDuration: tracks.reduce((sum, track) => sum + track.duration, 0)
+                    }
+                };
+
+                if (options.output) {
+                    const fs = await import('fs/promises');
+                    await fs.writeFile(options.output, JSON.stringify(output, null, 2));
+                    console.log(`Playlist data saved to: ${options.output}`);
+                } else {
+                    console.log('\n=== TRACKS DATA ===');
+                    console.log(JSON.stringify(output, null, 2));
+                }
             }
 
         } catch (error) {
@@ -89,22 +109,16 @@ program
 
 program
     .command('info')
-    .description('Show information about the tool')
+    .description('Show information about fetchify')
     .action(() => {
+        console.log(ansci_logo);
         console.log('Fetchify - Spotify Playlist Fetcher');
-        console.log('');
-        console.log('This tool uses a headless browser to scrape Spotify playlist data.');
-        console.log('Requirements:');
-        console.log('- You must be logged into Spotify in your default browser');
-        console.log('- The playlist must be publicly accessible');
-        console.log('');
-        console.log('Usage:');
-        console.log('  fetchify playlist <url>              Fetch playlist and display data');
-        console.log('  fetchify playlist <url> -o data.json Save playlist data to file');
-        console.log('  fetchify playlist <url> -v           Enable verbose output');
-        console.log('');
-        console.log('Example:');
-        console.log('  fetchify playlist https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M');
+        console.log('Fetch Spotify playlist data without using the official API');
+        console.log('\nFeatures:');
+        console.log('- Fetch track information from playlists');
+        console.log('- Download MP3 files from YouTube');
+        console.log('- Export to JSON format');
+        console.log('- Configurable track limits');
     });
 
 program.parse(process.argv);

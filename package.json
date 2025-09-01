@@ -11,15 +11,16 @@
     "author": "?",
     "license": "ISC",
     "dependencies": {
+        "@distube/ytdl-core": "^4.16.12",
         "commander": "^11.0.0",
-        "ws": "^8.14.0",
-        "jsdom": "^23.0.0"
+        "jsdom": "^23.0.0",
+        "ws": "^8.14.0"
     },
     "devDependencies": {
+        "@types/jsdom": "^21.1.0",
         "@types/node": "^20.0.0",
         "@types/ws": "^8.5.0",
-        "@types/jsdom": "^21.1.0",
-        "typescript": "^5.0.0",
-        "ts-node": "^10.0.0"
+        "ts-node": "^10.0.0",
+        "typescript": "^5.0.0"
     }
 }
