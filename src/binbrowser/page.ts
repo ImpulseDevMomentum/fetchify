@@ -35,19 +35,16 @@ export class PageManager {
      * Initialize connection to browser
      */
     async init(): Promise<void> {
-        // Get available tabs
         const tabsResponse = await fetch(`http://localhost:${this.debugPort}/json`);
         const tabs = await tabsResponse.json();
         
         let targetTab = tabs.find((tab: any) => tab.type === 'page');
         
         if (!targetTab) {
-            // Create new tab
             const newTabResponse = await fetch(`http://localhost:${this.debugPort}/json/new`);
             targetTab = await newTabResponse.json();
         }
 
-        // Connect to WebSocket
         this.ws = new WebSocket(targetTab.webSocketDebuggerUrl);
         
         await new Promise((resolve, reject) => {
@@ -57,7 +54,6 @@ export class PageManager {
             this.ws.on('error', reject);
         });
 
-        // Setup message handling
         this.ws.on('message', (data) => {
             const message = JSON.parse(data.toString());
             
@@ -73,12 +69,10 @@ export class PageManager {
             }
         });
 
-        // Enable necessary domains
         await this.sendCommand('Runtime.enable');
         await this.sendCommand('Page.enable');
         await this.sendCommand('DOM.enable');
         
-        // Set viewport
         if (this.config.viewport) {
             await this.sendCommand('Emulation.setDeviceMetricsOverride', {
                 width: this.config.viewport.width,
@@ -88,7 +82,6 @@ export class PageManager {
             });
         }
 
-        // Set user agent
         if (this.config.userAgent) {
             await this.sendCommand('Network.setUserAgentOverride', {
                 userAgent: this.config.userAgent
@@ -113,7 +106,6 @@ export class PageManager {
             this.pendingMessages.set(id, { resolve, reject });
             this.ws!.send(JSON.stringify(message));
             
-            // Timeout after 30 seconds
             setTimeout(() => {
                 if (this.pendingMessages.has(id)) {
                     this.pendingMessages.delete(id);
@@ -131,7 +123,6 @@ export class PageManager {
         
         await this.sendCommand('Page.navigate', { url });
 
-        // Wait for load event
         const waitUntil = options.waitUntil || 'load';
         
         if (waitUntil === 'load') {
@@ -139,7 +130,6 @@ export class PageManager {
         } else if (waitUntil === 'domcontentloaded') {
             await this.waitForEvent('Page.domContentEventFired');
         } else if (waitUntil === 'networkidle') {
-            // Wait for network to be idle for 500ms
             await this.waitForNetworkIdle();
         }
 
@@ -306,7 +296,6 @@ export class PageManager {
                     console.log(`Cache ${cacheName} has ${requests.length} entries`);
                     
                     for (const request of requests) {
-                        // Only get actual image files, not JS/CSS
                         if (request.url.includes('i.scdn.co/image/') ||
                             (request.url.includes('spotify') && 
                              (request.url.includes('.jpg') || 
@@ -353,7 +342,6 @@ export class PageManager {
                 }
             });
 
-            // Also check background images
             const allElements = document.querySelectorAll('*');
             allElements.forEach(element => {
                 const style = window.getComputedStyle(element);

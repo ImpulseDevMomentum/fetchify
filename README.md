@@ -39,6 +39,14 @@ npx ts-node index.ts playlist "https://open.spotify.com/playlist/..." -o playlis
 npx ts-node index.ts playlist "https://open.spotify.com/playlist/..." -d -o downloads
 ```
 
+## Issues (tho this is a fun project, so I wont fix it prob idk)
+
+- Loads only 59 tracks from the playlist, if the playlist is smaller than 59, it will fetch and/or download tracks normally, if playlist
+is larger than 59, only first 59 tracks will be downloaded/fetched.
+
+- The fetch could be faster
+
+
 ## Requirements
 
 - Node.js

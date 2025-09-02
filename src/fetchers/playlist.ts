@@ -40,10 +40,9 @@ export class PlaylistFetcher {
             console.log(`Navigating to: ${playlistUrl}`);
             await this.browser.goto(playlistUrl);
 
-            // wait for a page to load
             await new Promise(resolve => setTimeout(resolve, 3000));
             
-            // If amount is not specified (auto mode), scroll to load more tracks
+            
             if (!amount) {
                 console.log('Auto mode: scrolling to load all tracks...');
                 await this.scrollToLoadAllTracks();
@@ -60,7 +59,6 @@ export class PlaylistFetcher {
                     spotify_url?: string;
                 }
                 
-                // First detect total number of tracks from playlist metadata
                 let totalPlaylistTracks = 0;
                 const metadataElements = document.querySelectorAll('[data-testid="playlist-page"] span, .main-entityHeader-subtitle span, [data-testid="entityTitle"] span');
                 for (const element of metadataElements) {
@@ -79,19 +77,15 @@ export class PlaylistFetcher {
                 console.log(`Found ${trackElements.length} track elements on the page`);
                 console.log(`Requested amount: ${requestedAmount}`);
                 
-                // Determine how many tracks to fetch
                 let maxTracks: number;
                 if (requestedAmount && requestedAmount > 0) {
-                    // User specified amount
                     maxTracks = Math.min(trackElements.length, requestedAmount);
                     console.log(`Fetching ${maxTracks} tracks (user requested ${requestedAmount})`);
                 } else {
-                    // Auto mode - use detected count or fallback to available elements
                     if (totalPlaylistTracks > 0) {
                         maxTracks = Math.min(trackElements.length, totalPlaylistTracks);
                         console.log(`Auto mode: fetching ${maxTracks} tracks (playlist has ${totalPlaylistTracks})`);
                     } else {
-                        // Fallback if can't detect playlist size - use all available tracks
                         maxTracks = trackElements.length;
                         console.log(`Auto mode fallback: fetching all ${maxTracks} available tracks (couldn't detect playlist size)`);
                     }
@@ -104,10 +98,8 @@ export class PlaylistFetcher {
                         const titleEl = row.querySelector('[data-testid="internal-track-link"]');
                         const title = titleEl?.textContent?.trim() || `Track ${i + 1}`;
                         
-                                                 // Better artist extraction with multiple fallback strategies
                          let artists: string[] = [];
                          
-                         // Strategy 1: Look for artist links in track row
                          const artistLinks = row.querySelectorAll('a[href*="/artist/"]');
                          artistLinks.forEach(el => {
                              const artistName = el.textContent?.trim();
@@ -116,7 +108,6 @@ export class PlaylistFetcher {
                              }
                          });
                          
-                         // Strategy 2: If no artists found, try different selectors
                          if (artists.length === 0) {
                              const altArtistEls = row.querySelectorAll('span[dir="auto"] a, [data-testid="internal-track-link"] + span a');
                              altArtistEls.forEach(el => {
@@ -127,13 +118,11 @@ export class PlaylistFetcher {
                              });
                          }
                          
-                         // Strategy 3: Last resort - look for any span with dir="auto" that might contain artist
                          if (artists.length === 0) {
                              const spanElements = row.querySelectorAll('span[dir="auto"]');
                              for (const span of spanElements) {
                                  const text = span.textContent?.trim();
                                  if (text && text !== title && !text.includes('album') && text.length > 1) {
-                                     // Check if this span contains artist links
                                      const innerLinks = span.querySelectorAll('a');
                                      if (innerLinks.length > 0) {
                                          innerLinks.forEach(link => {
@@ -178,7 +167,6 @@ export class PlaylistFetcher {
 
             console.log(`Extracted ${tracks.length} tracks`);
             
-            // Save to cache
             await this.saveToCache(tracks);
             
             return tracks;
@@ -206,9 +194,7 @@ export class PlaylistFetcher {
     private async scrollToLoadAllTracks(): Promise<void> {
         if (!this.browser) return;
 
-        // First check how many tracks the playlist should have vs how many are loaded
         const trackInfo = await this.browser.evaluate(() => {
-            // Get expected track count from metadata
             let expectedTrackCount = 0;
             const metadataElements = document.querySelectorAll('[data-testid="playlist-page"] span, .main-entityHeader-subtitle span, [data-testid="entityTitle"] span');
             for (const element of metadataElements) {
@@ -226,7 +212,6 @@ export class PlaylistFetcher {
 
         console.log(`Expected tracks: ${trackInfo.expectedTracks}, Currently loaded: ${trackInfo.currentTracks}`);
 
-        // If we already have all tracks or can't detect expected count, don't scroll
         if (trackInfo.expectedTracks === 0) {
             console.log('Could not detect expected track count - will scroll to load more');
         } else if (trackInfo.currentTracks >= trackInfo.expectedTracks) {
@@ -238,17 +223,14 @@ export class PlaylistFetcher {
 
         let previousTrackCount = trackInfo.currentTracks;
         let stableScrollCount = 0;
-        const maxStableScrolls = 5; // Stop after 5 scrolls with no new tracks
-        const maxScrolls = 100; // Increase for large playlists
+        const maxStableScrolls = 5;
+        const maxScrolls = 100;
         let scrollCount = 0;
 
         while (scrollCount < maxScrolls && stableScrollCount < maxStableScrolls) {
-            // More aggressive scrolling strategy
             await this.browser.evaluate(() => {
-                // Try multiple scrolling approaches
                 window.scrollTo(0, document.body.scrollHeight);
                 
-                // Also try scrolling the main content area
                 const mainContent = document.querySelector('[data-testid="playlist-page"]') || 
                                    document.querySelector('main') || 
                                    document.querySelector('.main-view-container');
@@ -256,39 +238,33 @@ export class PlaylistFetcher {
                     mainContent.scrollTop = mainContent.scrollHeight;
                 }
                 
-                // Try scrolling specific tracklist container
                 const tracklist = document.querySelector('[data-testid="playlist-tracklist"]') ||
                                  document.querySelector('.tracklist-container');
                 if (tracklist) {
                     tracklist.scrollTop = tracklist.scrollHeight;
                 }
                 
-                // Additional scroll by simulating page down
                 window.scrollBy(0, window.innerHeight);
             });
 
-            // Wait longer for new tracks to load
             await new Promise(resolve => setTimeout(resolve, 3000));
 
-            // Get current track count
             const currentTrackCount = await this.browser.evaluate(() => {
                 return document.querySelectorAll('[data-testid="tracklist-row"]').length;
             }) as number;
 
             console.log(`Scroll ${scrollCount + 1}: Found ${currentTrackCount} tracks (+${currentTrackCount - previousTrackCount})`);
 
-            // Check if we've reached the expected count
             if (trackInfo.expectedTracks > 0 && currentTrackCount >= trackInfo.expectedTracks) {
                 console.log(`Reached expected track count (${trackInfo.expectedTracks}), stopping scroll`);
                 break;
             }
 
-            // Check if new tracks were loaded
             if (currentTrackCount === previousTrackCount) {
                 stableScrollCount++;
                 console.log(`No new tracks loaded (${stableScrollCount}/${maxStableScrolls})`);
             } else {
-                stableScrollCount = 0; // Reset counter if new tracks were found
+                stableScrollCount = 0;
             }
 
             previousTrackCount = currentTrackCount;

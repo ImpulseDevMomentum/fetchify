@@ -45,7 +45,6 @@ export class BinBrowser {
     async launch(options: LaunchOptions = {}): Promise<void> {
         const executablePath = options.executablePath || await this.findChromePath();
         
-        // Ensure user data directory exists
         if (this.config.userDataDir) {
             await fs.mkdir(this.config.userDataDir, { recursive: true });
         }
@@ -85,10 +84,8 @@ export class BinBrowser {
             console.error('Browser process error:', error);
         });
 
-        // Wait for browser to start
         await this.waitForDebugPort();
         
-        // Initialize page manager
         this.pageManager = new PageManager(this.debugPort, this.config);
         await this.pageManager.init();
     }
@@ -132,7 +129,6 @@ export class BinBrowser {
                     return;
                 }
             } catch (error) {
-                // Continue waiting
                 if (i % 10 === 0) {
                     console.log(`Still waiting for debug port... (attempt ${i + 1}/${maxAttempts})`);
                 }
