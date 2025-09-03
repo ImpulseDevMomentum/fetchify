@@ -32,7 +32,7 @@ const ansci_logo = `
 
 program
     .name('fetchify')
-    .description('Fetch Spotify playlist data without the use of the official API')
+    .description('Fetch Spotify playlist & track data without the use of the official API')
     .version('1.0.0');
 
 program
@@ -206,13 +206,16 @@ program
     .description('Show information about fetchify')
     .action(() => {
         console.log(ansci_logo);
-        console.log('Fetchify - Spotify Playlist Fetcher');
+        console.log('Fetchify - Spotify Fetcher');
         console.log('Fetch Spotify playlist data without using the official API');
         console.log('\nFeatures:');
         console.log('- Fetch track information from playlists');
+        console.log('- Fetch track information from tracks');
         console.log('- Download MP3 files from YouTube');
         console.log('- Export to JSON format');
         console.log('- Configurable track limits');
+        console.log('- Fetch track cover');
+        console.log('- Fetch track metadata');
     });
 
 program.parse(process.argv);
