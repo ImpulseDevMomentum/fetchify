@@ -53,12 +53,11 @@ npx ts-node index.ts track "https://open.spotify.com/track/..." -d -o downloads
 
 ## Issues (tho this is a fun project, so I wont fix it prob idk)
 
-- Loads only 59 tracks from the playlist, if the playlist is smaller than 59, it will fetch and/or download tracks normally, if playlist
-is larger than 59, only first 59 tracks will be downloaded/fetched.
+- Loads only 59 tracks from the playlist. If the playlist has fewer than 59 tracks, it will fetch and download them normally. If the playlist has more than 59 tracks, only the first 59 will be fetched/downloaded
 
-- The fetch could be faster
+- The fetching process could be faster
 
-- Sometimes it picks as authors (the rate is lower with a hole playlist, it does it more frequently with a single track fetch) the recommendations, so like "More of <author>", "Show All", "Popural releases of <author>" etc
+- Sometimes it incorrectly picks the recommended sections as authors (this happens less often with a full playlist, but more frequently when fetching a single track), such as "More of <author>", "Show All", or "Popular releases of <author>"
 
 
 ## Requirements
