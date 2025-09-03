@@ -56,8 +56,7 @@ program
                 process.exit(1);
             }
 
-            console.log('Initializing browser...');
-            console.log('Note: A browser window will open. Please ensure you are logged into Spotify.');
+            // console.log('Initializing browser...');
             
             let amountToFetch: number | undefined;
             if (options.amount && options.amount !== 'auto') {
@@ -86,7 +85,7 @@ program
                     process.exit(1);
                 }
                 
-                console.log(`\nDownload mode enabled. Fetching MP3 files...`);
+                // console.log(`\nDownload mode enabled. Fetching MP3 files...`);
                 const downloadResult = await downloadTracks(tracks, options.output);
                 
                 if (options.verbose) {
@@ -126,14 +125,12 @@ program.command('track')
     .argument('<url>', 'Spotify track URL')
     .option('-o, --output <path>', 'Output directory/file (JSON format)')
     .option('-v, --verbose', 'Enable verbose logging')
-    // .option('-l, --lyrics', 'Fetch lyrics for the track')
     .option('-m, --metadata', 'Fetch metadata for the track')
     .option('-d, --download', 'Download MP3 files instead of saving JSON')
     .option('-c, --cover', 'Fetch cover for the track')
     .action(async (url: string, options: { 
         output?: string; 
         verbose?: boolean; 
-        lyrics?: boolean; 
         metadata?: boolean; 
         download?: boolean; 
         cover?: boolean;
@@ -150,14 +147,9 @@ program.command('track')
                 process.exit(1);
             }
 
-            // for now set lyrics to false, they dont work as expected
-            options.lyrics = false;
-
-            console.log('Initializing browser...');
-            console.log('Note: A browser window will open. Please ensure you are logged into Spotify.');
+            // console.log('Initializing browser...');
             
             const trackOptions = {
-                lyrics: options.lyrics || false,
                 metadata: options.metadata || false,
                 cover: options.cover || false
             };
@@ -169,7 +161,6 @@ program.command('track')
                 if (track.album) console.log(`Album: ${track.album}`);
                 if (track.release_date) console.log(`Released: ${track.release_date}`);
                 if (track.cover_url) console.log(`Cover available: ${track.cover_url ? 'Yes' : 'No'}`);
-                if (track.lyrics) console.log(`Lyrics fetched: ${track.lyrics.length > 0 ? 'Yes' : 'No'}`);
             }
 
             if (options.download) {
@@ -178,7 +169,7 @@ program.command('track')
                     process.exit(1);
                 }
                 
-                console.log(`\nDownload mode enabled. Fetching MP3 file...`);
+                // console.log(`\nDownload mode enabled. Fetching MP3 file...`);
                 const downloadResult = await downloadTracks([track], options.output, options.verbose);
                 
                 if (options.verbose) {

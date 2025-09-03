@@ -25,6 +25,9 @@ Options:
 - `-o, --output <path>` - Output directory or file
 - `-d, --download` - Download MP3 files instead of JSON
 - `-v, --verbose` - Enable detailed logging
+- `-l, --lyrics` - Fetch lyrics for tracks (track command only)
+- `-m, --metadata` - Fetch additional metadata (track command only)
+- `-c, --cover` - Fetch cover art (track command only)
 
 ## Examples
 
@@ -35,8 +38,17 @@ npx ts-node index.ts playlist "https://open.spotify.com/playlist/..." -a 5 -d -o
 # Export playlist to JSON
 npx ts-node index.ts playlist "https://open.spotify.com/playlist/..." -o playlist.json
 
-# Download all tracks with progress bar
+# Download all tracks
 npx ts-node index.ts playlist "https://open.spotify.com/playlist/..." -d -o downloads
+
+# Fetch 1 track with metadata & track cover (without verbose output)
+npx ts-node index.ts track "https://open.spotify.com/track/..." -m -c
+
+# Fetch 1 track with metadata & cover (with verbose output)
+npx ts-node index.ts track "https://open.spotify.com/track/..." -v -m -c
+
+# Fetch and download a track (without verbose output) (Same as playlists, with -d flag, you have to pass a output path too)
+npx ts-node index.ts track "https://open.spotify.com/track/..." -d -o downloads
 ```
 
 ## Issues (tho this is a fun project, so I wont fix it prob idk)
@@ -45,6 +57,8 @@ npx ts-node index.ts playlist "https://open.spotify.com/playlist/..." -d -o down
 is larger than 59, only first 59 tracks will be downloaded/fetched.
 
 - The fetch could be faster
+
+- Sometimes it picks as authors (the rate is lower with a hole playlist, it does it more frequently with a single track fetch) the recommendations, so like "More of <author>", "Show All", "Popural releases of <author>" etc
 
 
 ## Requirements

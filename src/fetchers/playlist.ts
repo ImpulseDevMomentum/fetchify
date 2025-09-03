@@ -18,7 +18,7 @@ import { join } from 'path';
 import Track from '../types/track';
 
 /**
- * Playlist fetcher that gets just the basic track info
+ * Playlist fetcher that gets the job done
  */
 export class PlaylistFetcher {
     private browser: BinBrowser | null = null;

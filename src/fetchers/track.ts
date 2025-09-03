@@ -32,10 +32,9 @@ export class TrackFetcher {
     }
 
     async fetchTrack(trackUrl: string, options: {
-        lyrics?: boolean;
         metadata?: boolean;
         cover?: boolean;
-    } = {}): Promise<Track & { lyrics?: string; cover_url?: string; album?: string; release_date?: string; popularity?: number }> {
+    } = {}): Promise<Track & { cover_url?: string; album?: string; release_date?: string; popularity?: number }> {
         if (!this.browser) {
             throw new Error('Browser not initialized. Call init() first.');
         }
@@ -48,7 +47,6 @@ export class TrackFetcher {
 
             console.log('Extracting track information...');
             const trackData = await this.browser.evaluate((opts: {
-                lyrics?: boolean;
                 metadata?: boolean;
                 cover?: boolean;
             }) => {
@@ -214,15 +212,8 @@ export class TrackFetcher {
                 cover_url?: string; 
             };
 
-            let lyrics = '';
-            if (options.lyrics) {
-                console.log('Fetching lyrics...');
-                lyrics = await this.fetchLyrics(trackData.title, trackData.artist);
-            }
-
             const result = {
                 ...trackData,
-                ...(options.lyrics && { lyrics })
             };
 
             console.log(`Successfully fetched track: ${result.title} by ${result.artist}`);
@@ -232,39 +223,6 @@ export class TrackFetcher {
             console.error('Error fetching track:', error);
             throw error;
         }
-    }
-
-    private async fetchLyrics(title: string, artist: string): Promise<string> {
-        try {
-            console.log(`Fetching lyrics for: ${title} by ${artist}`);
-            
-            const cleanTitle = title.replace(/[^\w\s]/gi, '').trim();
-            const cleanArtist = artist.split(',')[0].replace(/[^\w\s]/gi, '').trim();
-            
-            const lyrics = await this.searchLyricsFromMultipleSources(cleanTitle, cleanArtist);
-            
-            if (lyrics && lyrics.length > 50) {
-                console.log(`Successfully fetched ${lyrics.length} characters of lyrics`);
-                return lyrics;
-            } else {
-                console.log('No lyrics found');
-                return `[No lyrics found for "${title}" by ${artist}]`;
-            }
-        } catch (error) {
-            console.warn('Error fetching lyrics:', error);
-            return `[Error fetching lyrics for "${title}" by ${artist}]`;
-        }
-    }
-
-    private async searchLyricsFromMultipleSources(title: string, artist: string): Promise<string> {
-        try {
-
-        } catch (error) {
-            console.warn('', error);
-            return '';
-        }
-        // TODO: add a real lyrics search
-        return '';
     }
 
     private async saveToCache(track: any): Promise<void> {
@@ -290,10 +248,9 @@ export class TrackFetcher {
 }
 
 export async function fetchTrack(trackUrl: string, options: {
-    lyrics?: boolean;
     metadata?: boolean;
     cover?: boolean;
-} = {}): Promise<Track & { lyrics?: string; cover_url?: string; album?: string; release_date?: string; popularity?: number }> {
+} = {}): Promise<Track & { cover_url?: string; album?: string; release_date?: string; popularity?: number }> {
     const fetcher = new TrackFetcher();
     
     try {
