@@ -94,11 +94,23 @@ If build fails:
 1. Make sure you have TypeScript installed: `npm install -g typescript`
 2. Try deleting `node_modules` and `package-lock.json`, then run `npm install`
 
-## Uninstallation
+### Manual Uninstallation
 
 To uninstall fetchify:
 ```bash
 npm uninstall -g fetchify
+```
+
+### Automatic Uninstallation (Recommended)
+
+#### For Windows:
+```
+uninstall.bat
+```
+
+#### For Linux/macOS:
+```
+uninstall.sh
 ```
 
 ## Development Setup
