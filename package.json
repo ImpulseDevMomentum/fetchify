@@ -1,0 +1,37 @@
+{
+    "name": "fetchify",
+    "version": "1.0.0",
+    "description": "API-free Spotify playlist downloader/track fetcher without the use of the official API or fishy yt-to-mp3 websites",
+    "main": "dist/index.js",
+    "bin": {
+        "fetchify": "./dist/index.js"
+    },
+    "scripts": {
+        "start": "node dist/index.js",
+        "build": "tsc",
+        "dev": "ts-node index.ts",
+        "prepare": "npm run build",
+        "postinstall": "npm run build"
+    },
+    "files": [
+        "dist/**/*",
+        "README.md",
+        "package.json"
+    ],
+    "author": "?",
+    "license": "ISC",
+    "dependencies": {
+        "@distube/ytdl-core": "^4.16.12",
+        "commander": "^11.0.0",
+        "jsdom": "^23.0.0",
+        "sharp": "^0.34.3",
+        "ws": "^8.14.0"
+    },
+    "devDependencies": {
+        "@types/jsdom": "^21.1.0",
+        "@types/node": "^20.0.0",
+        "@types/ws": "^8.5.0",
+        "ts-node": "^10.0.0",
+        "typescript": "^5.0.0"
+    }
+}
